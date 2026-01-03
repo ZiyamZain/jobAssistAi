@@ -4,7 +4,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Login from './pages/Login';
 // import Register from './pages/Register';
-// import Dashboard from './pages/Dashboard';
+import Dashboard from './pages/Dashboard';
 
 
 import { useAuthStore } from './store/authStore';
@@ -28,7 +28,7 @@ const App = () => {
         <Route path='/dashboard'
         element={
           <ProtectedRoute>
-            <div className='p-8'>Dashboard coming soon</div>
+            <Dashboard/>
           </ProtectedRoute>
         }/>
 

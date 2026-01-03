@@ -5,11 +5,14 @@ import {
 } from "./validationSchemas.js";
 
 const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+console.log(process.env.GEMINI_API_KEY);
 
 interface AIResponse {
   optimizedResume?: string;
   coverLetter?: string;
   matchScore: number;
+  matchAnalysis?: string;
+  missingSkills?: string[];
   requiredSkills: string[];
 }
 
@@ -29,18 +32,22 @@ export const optimizeResume = async (
     1. Extract 5-8 key skills/requirements from job description
     2. Rewrite resume bullet points to match job requirements (ATS-friendly, quantified achievements)
     3. Calculate match score (0-100%) based on skill alignment
-    4. Return ONLY in this JSON format:
+    4. Provide a brief analysis (1-2 sentences) explaining the score
+    5. List key skills present in JD but missing from resume
+    6. Return ONLY in this JSON format:
 
     {
       "optimizedResume": "Optimized resume text here...",
       "matchScore": 87,
-      "requiredSkills": ["React", "TypeScript", "Leadership", "AWS"]
+      "matchAnalysis": "Strong match on technical skills like React and Node.js, but missing specific leadership experience mentioned in JD.",
+      "requiredSkills": ["React", "TypeScript", "Leadership", "AWS"],
+      "missingSkills": ["Leadership", "Kubernetes"]
     }
   `;
 
   try {
     const response = await genAI.models.generateContent({
-      model: "gemini-2.5-flash-lite",
+      model: "gemini-3-flash-preview",
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -58,7 +65,9 @@ export const optimizeResume = async (
     return {
       optimizedResume: result.optimizedResume,
       matchScore: result.matchScore || 0,
+      matchAnalysis: result.matchAnalysis || "Analysis not available",
       requiredSkills: result.requiredSkills || [],
+      missingSkills: result.missingSkills || [],
     };
   } catch (error) {
     console.error("Gemini optimization error:", error);
@@ -96,7 +105,7 @@ export const generateCoverLetter = async (
 
   try {
     const response = await genAI.models.generateContent({
-      model: "gemini-2.5-flash-lite",
+      model: "gemini-3-flash-preview",
       contents: prompt,
     });
 

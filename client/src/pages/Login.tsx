@@ -3,21 +3,23 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link, useNavigate } from "react-router";
+import { motion } from "framer-motion";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import api from "../lib/api";
-import { toast } from "react-toastify"; // Make sure to add ToastContainer in App.tsx
+import { toast } from "react-toastify";
+import { MinimalInput } from "../components/ui/input";
 
-// Define validation schema (match backend!)
 const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(1, "Password is required"),
+  email: z.string().email("Valid email required"),
+  password: z.string().min(1, "Password required"),
 });
 
 type LoginInputs = z.infer<typeof loginSchema>;
 
 export default function Login() {
   const navigate = useNavigate();
-  const setAuth = useAuthStore((state) => state.setAuth);
+  const setAuth = useAuthStore((s) => s.setAuth);
   const [isLoading, setIsLoading] = useState(false);
 
   const {
@@ -33,90 +35,109 @@ export default function Login() {
     try {
       const res = await api.post("/auth/login", data);
       const { user, token } = res.data.data;
-
       setAuth(user, token);
-      toast.success("Welcome back!");
+      toast.success("Access granted");
       navigate("/dashboard");
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Login failed");
+      toast.error("Invalid credentials");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8 bg-white p-8 shadow-lg rounded-xl">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-            Sign in to your account
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Or{" "}
-            <Link
-              to="/register"
-              className="font-medium text-blue-600 hover:text-blue-500"
-            >
-              create a new account
-            </Link>
-          </p>
-        </div>
+    <div className="min-h-screen bg-white dark:bg-black text-zinc-900 dark:text-zinc-100 flex flex-col justify-center items-center px-6">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-[400px] space-y-12"
+      >
+        {/* Brand Header */}
+        <header className="space-y-4">
+          <div className="flex justify-between items-end">
+            <div className="space-y-1">
+              <h1 className="text-4xl font-medium tracking-tighter">JobAI</h1>
+              <p className="text-zinc-500 dark:text-zinc-500 text-sm font-medium uppercase tracking-widest">
+                Studio Access
+              </p>
+            </div>
+            <Sparkles className="w-6 h-6 text-zinc-300 dark:text-zinc-700" />
+          </div>
+        </header>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
-          <div className="space-y-4 rounded-md shadow-sm">
-            <div>
-              <label htmlFor="email-address" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="email-address"
-                type="email"
-                autoComplete="email"
-                className={`relative block w-full rounded-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 px-3 ${
-                  errors.email ? "ring-red-500" : ""
-                }`}
+        {/* Form */}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+          <div className="space-y-6">
+            <div className="group">
+              <MinimalInput
                 placeholder="Email address"
+                type="email"
                 {...register("email")}
               />
               {errors.email && (
-                <p className="mt-1 text-sm text-red-600">
+                <p className="text-[10px] uppercase font-bold text-red-500 mt-2 tracking-wider">
                   {errors.email.message}
                 </p>
               )}
             </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                className={`relative block w-full rounded-md border-0 py-1.5 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 px-3 ${
-                  errors.password ? "ring-red-500" : ""
-                }`}
+
+            <div className="group">
+              <MinimalInput
                 placeholder="Password"
+                type="password"
                 {...register("password")}
               />
               {errors.password && (
-                <p className="mt-1 text-sm text-red-600">
+                <p className="text-[10px] uppercase font-bold text-red-500 mt-2 tracking-wider">
                   {errors.password.message}
                 </p>
               )}
             </div>
           </div>
 
-          <div>
+          <div className="pt-4">
             <button
               type="submit"
               disabled={isLoading}
-              className="group relative flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-70"
+              className="w-full h-14 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-black font-medium text-sm flex items-center justify-center gap-3 hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-30"
             >
-              {isLoading ? "Signing in..." : "Sign in"}
+              {isLoading ? (
+                "Authenticating..."
+              ) : (
+                <>
+                  CONTINUE TO DASHBOARD
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
           </div>
         </form>
-      </div>
+
+        {/* Footer */}
+        <footer className="flex flex-col gap-4 text-[11px] font-medium uppercase tracking-widest text-zinc-400 dark:text-zinc-600 border-t border-zinc-100 dark:border-zinc-900 pt-8">
+          <div className="flex justify-between">
+            <Link
+              to="/register"
+              className="hover:text-zinc-900 dark:hover:text-white transition-colors"
+            >
+              Create Account
+            </Link>
+            <a
+              href="#"
+              className="hover:text-zinc-900 dark:hover:text-white transition-colors"
+            >
+              Forgot Access?
+            </a>
+          </div>
+          <p className="text-center opacity-50">
+            © 2026 JobAI. Engineered for performance.
+          </p>
+        </footer>
+      </motion.div>
+
+      {/* Subtle Background Detail */}
+      <div className="fixed top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-zinc-200 dark:via-zinc-800 to-transparent" />
     </div>
   );
 }

@@ -1,2 +1,32 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+
+/* Tailwind v4 Dark Mode Support */
+@variant dark (&:where(.dark, .dark *));
+
+/* Theme Variables */
+@theme {
+  --color-background: #ffffff;
+  --color-foreground: #0a0a0a;
+}
+
+/* System Dark Mode Preference */
+@media (prefers-color-scheme: dark) {
+  @theme {
+    --color-background: #0a0a0a;
+    --color-foreground: #ffffff;
+  }
+}
+
+/* Class-based Dark Mode Override */
+.dark {
+  color-scheme: dark;
+  --color-background: #0a0a0a;
+  --color-foreground: #ffffff;
+}
+
+.light {
+  color-scheme: light;
+  --color-background: #ffffff;
+  --color-foreground: #0a0a0a;
+}
