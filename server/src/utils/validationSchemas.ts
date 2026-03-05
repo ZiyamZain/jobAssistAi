@@ -27,7 +27,21 @@ export const uploadResumeSchema = z.object({
     .max(10000, "Resume text is too long"),
 });
 
+//======================File schema ===========================//
+
+export const fileSchema = z.object({
+  fieldname: z.string(),
+  originalname: z.string(),
+  encoding: z.string(),
+  mimetype: z.string().refine((val) => val === "application/pdf", {
+    message: "Only pdf files are allowed",
+  }),
+  buffer: z.any(),
+  size: z.number().max(5 * 1024 * 1024, "File size must be less than 5 MB"),
+});
+
 // ==================== APPLICATION SCHEMAS ====================
+
 export const createApplicationSchema = z.object({
   jobTitle: z
     .string()
@@ -37,8 +51,14 @@ export const createApplicationSchema = z.object({
   company: z.string().max(200, "Company name is too long").trim().optional(),
   jobDescription: z
     .string()
-    .min(50, "Job description must be at least 50 characters")
+    .min(10, "Job description must be at least 10 characters")
     .max(10000, "Job description is too long"),
+  matchScore: z.number().optional(),
+  matchAnalysis: z.string().optional(),
+  requiredSkills: z.array(z.string()).optional(),
+  missingSkills: z.array(z.string()).optional(),
+  optimizedResume: z.string().optional(),
+  originalResume: z.string().optional(),
 });
 
 export const updateApplicationSchema = z.object({
@@ -50,10 +70,30 @@ export const updateApplicationSchema = z.object({
 });
 
 // ==================== AI SERVICE SCHEMAS ====================
-export const optimizeResumeSchema = z.object({
-  resumeText: z.string().min(100),
-  jobDescription: z.string().min(50),
-});
+export const optimizeResumeSchema = z
+  .object({
+    resumeText: z
+      .string()
+      .min(20, "Resume text must be at least 20 characters")
+      .max(20000, "Resume text is too long")
+      .optional(),
+    jobTitle: z
+      .string()
+      .min(2, "Job title is required")
+      .max(200, "Job title is too long")
+      .trim(),
+    company: z.string().max(200, "Company name is too long").trim().optional(),
+    jobDescription: z
+      .string()
+      .min(10, "Job description must be at least 10 characters")
+      .max(10000, "Job description is too long"),
+    // This will be added by multer, not directly from client
+    file: z.any().optional(),
+  })
+  .refine((data) => data.resumeText || data.file, {
+    message: "Either resume text or file must be provided",
+    path: ["resumeText"],
+  });
 
 export const generateCoverLetterSchema = z.object({
   resumeText: z.string().min(100),

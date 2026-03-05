@@ -7,11 +7,11 @@ import { motion } from "framer-motion";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import api from "../lib/api";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { MinimalInput } from "../components/ui/input";
 
 const loginSchema = z.object({
-  email: z.string().email("Valid email required"),
+  email: z.email("Valid email required"),
   password: z.string().min(1, "Password required"),
 });
 
@@ -37,7 +37,7 @@ export default function Login() {
       const { user, token } = res.data.data;
       setAuth(user, token);
       toast.success("Access granted");
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
     } catch (error: any) {
       toast.error("Invalid credentials");
     } finally {

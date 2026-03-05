@@ -13,3 +13,7 @@ const resumeSchema = new Schema<IResume>({
 });
 
 export default mongoose.model<IResume>("Resume", resumeSchema);
+
+
+
+

@@ -5,17 +5,19 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import connectDB from "./config/database.js";
 
-// --- ROUTES IMPORTS ---
+
 import authRoutes from "./routes/authRoutes.js";
 import applicationRoutes from "./routes/applicationRoutes.js";
-import aiRoutes from "./routes/aiRoutes.js"; // New AI Routes
+import aiRoutes from "./routes/aiRoutes.js"; 
 
 const app: Application = express();
 
 // 1. DATABASE
+
 connectDB();
 
 // 2. SECURITY MIDDLEWARE (Always First)
+
 app.use(helmet());
 app.use(
   cors({
@@ -42,6 +44,7 @@ const limiter = rateLimit({
 app.use("/api", limiter);
 
 // 5. ROUTES MOUNTING
+
 app.use("/api/auth", authRoutes);
 app.use("/api/applications", applicationRoutes);
 app.use("/api/ai", aiRoutes); // Mount AI endpoints under /api/ai
@@ -70,3 +73,5 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`🛠️ Environment: ${process.env.NODE_ENV || "development"}`);
 });
+
+

@@ -1,32 +1,20 @@
 import { useState, useEffect } from "react";
-
 import {
   DragDropContext,
   Droppable,
   Draggable,
   type DropResult,
 } from "@hello-pangea/dnd";
-import {
-  Plus,
-  Search,
-  Check,
-  X,
-  Target,
-  Sun,
-  Moon,
-  Trash2,
-} from "lucide-react";
-import { useAuthStore } from "../store/authStore";
-import { useTheme } from "../contexts/ThemeContext";
+import { Plus, Search, Check, X, Target, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import api from "../lib/api";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 import NewAppModal from "../components/NewAppModal";
+import ApplicationDetailsModal from "../components/ApplicationDetailsModal";
 
 // Mapping backend status to frontend stages
 const STAGES = [
@@ -37,15 +25,12 @@ const STAGES = [
 ];
 
 export default function Dashboard() {
-  const user = useAuthStore((s) => s.user);
-  const logout = useAuthStore((s) => s.logout);
-  const { toggleTheme } = useTheme();
   const [view, setView] = useState<"board" | "list">("board");
   const [searchQuery, setSearchQuery] = useState("");
   const [apps, setApps] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedApp, setSelectedApp] = useState<any>(null);
 
   // Fetch real data
   const fetchApplications = async () => {
@@ -65,9 +50,8 @@ export default function Dashboard() {
     fetchApplications();
   }, []);
 
-  const handleAppSuccess = () => {
-    fetchApplications();
-    setIsModalOpen(false);
+  const handleAppClick = (app: any) => {
+    setSelectedApp(app);
   };
 
   const handleDelete = async (e: React.MouseEvent, appId: string) => {
@@ -92,7 +76,7 @@ export default function Dashboard() {
   const filteredApps = apps.filter(
     (app) =>
       app.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      app.jobTitle.toLowerCase().includes(searchQuery.toLowerCase())
+      app.jobTitle.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const onDragEnd = async (result: DropResult) => {
@@ -116,7 +100,7 @@ export default function Dashboard() {
 
     // Create a new apps array with the updated status
     const updatedApps = apps.map((app) =>
-      app._id === draggableId ? { ...app, status: newStatus } : app
+      app._id === draggableId ? { ...app, status: newStatus } : app,
     );
 
     setApps(updatedApps); // Update UI immediately
@@ -124,7 +108,7 @@ export default function Dashboard() {
     try {
       await api.put(`/applications/${draggableId}`, { status: newStatus });
       toast.success(
-        `Moved to ${STAGES.find((s) => s.id === newStatus)?.label}`
+        `Moved to ${STAGES.find((s) => s.id === newStatus)?.label}`,
       );
     } catch (error) {
       console.error("Failed to update status", error);
@@ -135,41 +119,13 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="h-screen flex bg-white dark:bg-[#0A0A0A] text-zinc-900 dark:text-white antialiased overflow-hidden transition-colors duration-300">
-      {/* Sidebar */}
-      <aside className="w-16 bg-white dark:bg-[#0A0A0A] border-r border-zinc-200 dark:border-white/5 flex flex-col items-center py-6 gap-8">
-        <div className="w-10 h-10 rounded-xl bg-black dark:bg-white flex items-center justify-center shadow-lg">
-          <Target className="w-5 h-5 text-white dark:text-black" />
-        </div>
-
-        <nav className="flex-1 flex flex-col items-center gap-4">
-          {/* Simple Nav - Active Dashboard */}
-          <div className="w-10 h-10 rounded-lg bg-zinc-100 dark:bg-white/10 flex items-center justify-center text-zinc-900 dark:text-white">
-            <Target className="w-5 h-5" />
-          </div>
-        </nav>
-
-        <button
-          onClick={toggleTheme}
-          className="w-10 h-10 rounded-lg flex items-center justify-center text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5 transition-all group relative"
-        >
-          <Sun className="w-5 h-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute w-5 h-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-        </button>
-
-        <Avatar className="w-10 h-10 border-2 border-zinc-200 dark:border-white/10 cursor-pointer hover:border-zinc-300 dark:hover:border-white/30 transition-all">
-          <AvatarFallback className="bg-zinc-200 dark:bg-zinc-800 text-xs font-bold">
-            {user?.name?.[0] || "U"}
-          </AvatarFallback>
-        </Avatar>
-      </aside>
-
+    <div className="flex-1 flex flex-col h-full bg-white dark:bg-[#0A0A0A] text-zinc-900 dark:text-white transition-colors duration-300">
       {/* Main Content */}
-      <main className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="h-16 border-b border-zinc-200 dark:border-white/5 backdrop-blur-xl bg-white/80 dark:bg-[#0A0A0A]/80 px-6 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-4 flex-1">
-            <div className="relative w-96">
+        <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 sm:h-16 sm:p-6 border-b border-zinc-200 dark:border-white/5 backdrop-blur-xl bg-white/80 dark:bg-[#0A0A0A]/80 shrink-0">
+          <div className="flex items-center gap-4 w-full sm:w-auto flex-1">
+            <div className="relative w-full sm:w-96">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 dark:text-zinc-500" />
               <input
                 type="text"
@@ -181,19 +137,11 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={logout}
-              className="text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
-            >
-              Sign Out
-            </Button>
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
             <Button
               size="sm"
               onClick={() => setIsModalOpen(true)}
-              className="bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-white/90 font-medium shadow-lg h-9 px-4"
+              className="w-full sm:w-auto bg-zinc-900 dark:bg-white text-white dark:text-black hover:bg-zinc-800 dark:hover:bg-white/90 font-medium shadow-lg h-9 px-4"
             >
               <Plus className="w-4 h-4 mr-2" />
               New Application
@@ -202,13 +150,13 @@ export default function Dashboard() {
         </header>
 
         {/* Workspace */}
-        <div className="flex-1 overflow-y-auto px-6 py-8 bg-zinc-50 dark:bg-[#0A0A0A]">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-6 sm:py-8 bg-zinc-50 dark:bg-[#0A0A0A]">
           {/* View Toggle */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
             <h1 className="text-xl font-semibold tracking-tight">
               Your Applications ({apps.length})
             </h1>
-            <div className="bg-white dark:bg-white/5 border border-zinc-200 dark:border-white/10 p-1 rounded-lg flex">
+            <div className="w-full sm:w-auto bg-white dark:bg-white/5 border border-zinc-200 dark:border-white/10 p-1 rounded-lg flex justify-center sm:justify-start">
               <button
                 onClick={() => setView("board")}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
@@ -246,13 +194,14 @@ export default function Dashboard() {
             <>
               {view === "board" && (
                 <DragDropContext onDragEnd={onDragEnd}>
-                  <div className="grid grid-cols-4 gap-4 h-full overflow-x-auto min-w-[1000px]">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:h-full lg:overflow-x-auto lg:min-w-[1000px]">
                     {STAGES.map((stage) => (
                       <KanbanColumn
                         key={stage.id}
                         stage={stage}
                         apps={getStageApps(stage.id)}
                         onDelete={handleDelete}
+                        onAppClick={handleAppClick}
                       />
                     ))}
                   </div>
@@ -260,8 +209,8 @@ export default function Dashboard() {
               )}
 
               {view === "list" && (
-                <div className="bg-white dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-xl overflow-hidden">
-                  <table className="w-full">
+                <div className="bg-white dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-xl overflow-x-auto">
+                  <table className="w-full min-w-[600px]">
                     <thead className="bg-zinc-50 dark:bg-white/5">
                       <tr className="border-b border-zinc-200 dark:border-white/10 text-left text-xs text-zinc-500 uppercase tracking-widest">
                         <th className="px-6 py-4 font-bold">Company</th>
@@ -278,7 +227,8 @@ export default function Dashboard() {
                       {filteredApps.map((app) => (
                         <tr
                           key={app._id}
-                          className="hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors"
+                          onClick={() => handleAppClick(app)}
+                          className="hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
                         >
                           <td className="px-6 py-4 font-medium">
                             {app.company}
@@ -327,12 +277,19 @@ export default function Dashboard() {
             </>
           )}
         </div>
-      </main>
+      </div>
 
       <NewAppModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSuccess={handleAppSuccess}
+        onSuccess={() => setIsModalOpen(false)}
+        onRefresh={fetchApplications}
+      />
+
+      <ApplicationDetailsModal
+        isOpen={!!selectedApp}
+        application={selectedApp}
+        onClose={() => setSelectedApp(null)}
       />
     </div>
   );
@@ -342,10 +299,12 @@ function KanbanColumn({
   stage,
   apps,
   onDelete,
+  onAppClick,
 }: {
   stage: any;
   apps: any[];
   onDelete: (e: React.MouseEvent, id: string) => void;
+  onAppClick: (app: any) => void;
 }) {
   const StageIcon = stage.icon;
   return (
@@ -389,6 +348,7 @@ function KanbanColumn({
                         }
                     `}
                     style={{ ...provided.draggableProps.style }}
+                    onClick={() => onAppClick(app)}
                   >
                     <div className="flex justify-between items-start mb-2">
                       <h4 className="font-semibold text-zinc-900 dark:text-white truncate">

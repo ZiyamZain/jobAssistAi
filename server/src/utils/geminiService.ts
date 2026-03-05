@@ -5,7 +5,6 @@ import {
 } from "./validationSchemas.js";
 
 const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-console.log(process.env.GEMINI_API_KEY);
 
 interface AIResponse {
   optimizedResume?: string;
@@ -17,7 +16,7 @@ interface AIResponse {
 }
 
 export const optimizeResume = async (
-  input: OptimizeResumeInput
+  input: OptimizeResumeInput,
 ): Promise<AIResponse> => {
   const prompt = `
     You are a senior recruiter with 10+ years experience. Analyze this job description and resume.
@@ -80,7 +79,7 @@ export const optimizeResume = async (
 };
 
 export const generateCoverLetter = async (
-  input: GenerateCoverLetterInput
+  input: GenerateCoverLetterInput,
 ): Promise<AIResponse> => {
   const tonePrompt =
     input.tone === "enthusiastic"

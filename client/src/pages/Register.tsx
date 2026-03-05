@@ -5,7 +5,7 @@ import { z } from "zod";
 import { Link, useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles } from "lucide-react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import api from "../lib/api";
 import { useAuthStore } from "../store/authStore";
 import { MinimalInput } from "../components/ui/input";
@@ -38,7 +38,7 @@ export default function Register() {
       const { user, token } = res.data.data;
       setAuth(user, token);
       toast.success("Welcome to the studio");
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
     } catch (err: any) {
       toast.error("Registration failed");
     } finally {

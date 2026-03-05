@@ -10,6 +10,9 @@ const applicationSchema = new Schema<IApplication>({
   optimizedResume: String,
   coverLetter: String,
   matchScore: Number,
+  matchAnalysis: String,
+  requiredSkills: [String],
+  missingSkills: [String],
   status: {
     type: String,
     enum: ["saved", "applied", "interview", "rejected"],

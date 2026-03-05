@@ -9,6 +9,7 @@ import {
   optimizeResumeSchema,
   generateCoverLetterSchema,
 } from "../utils/validationSchemas.js";
+import {upload } from '../utils/fileUtils.js';
 
 const router = express.Router();
 
@@ -16,6 +17,7 @@ const router = express.Router();
 router.post(
   "/optimize",
   authenticateToken,
+  upload.single('resumeFile'),
   validate(optimizeResumeSchema),
   optimizeResume
 );
